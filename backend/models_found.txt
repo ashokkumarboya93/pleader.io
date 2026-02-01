@@ -1,0 +1,22 @@
+Searching for Flash/Pro/2.0 models...
+FOUND: models/gemini-2.5-flash
+FOUND: models/gemini-2.5-pro
+FOUND: models/gemini-2.0-flash
+FOUND: models/gemini-2.0-flash-001
+FOUND: models/gemini-2.0-flash-exp-image-generation
+FOUND: models/gemini-2.0-flash-lite-001
+FOUND: models/gemini-2.0-flash-lite
+FOUND: models/gemini-2.5-flash-preview-tts
+FOUND: models/gemini-2.5-pro-preview-tts
+FOUND: models/gemini-flash-latest
+FOUND: models/gemini-flash-lite-latest
+FOUND: models/gemini-pro-latest
+FOUND: models/gemini-2.5-flash-lite
+FOUND: models/gemini-2.5-flash-image
+FOUND: models/gemini-2.5-flash-preview-09-2025
+FOUND: models/gemini-2.5-flash-lite-preview-09-2025
+FOUND: models/gemini-3-pro-preview
+FOUND: models/gemini-3-flash-preview
+FOUND: models/gemini-3-pro-image-preview
+FOUND: models/nano-banana-pro-preview
+FOUND: models/deep-research-pro-preview-12-2025

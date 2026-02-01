@@ -1,0 +1,17 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1769939326.861086    9352 alts_credentials.cc:93] ALTS creds ignored. Not running on GCP and untrusted ALTS is not enabled.
+Searching for Flash/Pro models...
+FOUND: models/gemini-2.5-flash
+FOUND: models/gemini-2.0-flash
+FOUND: models/gemini-2.0-flash-001
+FOUND: models/gemini-2.0-flash-exp-image-generation
+FOUND: models/gemini-2.0-flash-lite-001
+FOUND: models/gemini-2.0-flash-lite
+FOUND: models/gemini-2.5-flash-preview-tts
+FOUND: models/gemini-flash-latest
+FOUND: models/gemini-flash-lite-latest
+FOUND: models/gemini-2.5-flash-lite
+FOUND: models/gemini-2.5-flash-image
+FOUND: models/gemini-2.5-flash-preview-09-2025
+FOUND: models/gemini-2.5-flash-lite-preview-09-2025
+FOUND: models/gemini-3-flash-preview

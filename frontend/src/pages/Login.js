@@ -82,6 +82,27 @@ const Login = () => {
               <p className="text-gray-600">Enter your credentials to access your account</p>
             </div>
 
+            {/* Quick Login Test Accounts */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-semibold text-blue-800 mb-3">Quick Login (Test Accounts)</h3>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  onClick={() => setFormData({ email: 'john@test.com', password: 'password123' })}
+                  className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                >
+                  Login as John Doe (john@test.com)
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setFormData({ email: 'jane@test.com', password: 'password123' })}
+                  className="w-full h-10 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                >
+                  Login as Jane Smith (jane@test.com)
+                </Button>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

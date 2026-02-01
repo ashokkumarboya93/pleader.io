@@ -1,58 +1,28 @@
-# Dependencies
-node_modules/
-*/node_modules/
-
 # Environment variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 
-# Build outputs
-build/
-dist/
-*/build/
-*/dist/
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Python
+# Dependencies
+node_modules/
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+*.pyc
 
-# IDEs
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# IDE/Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# FAISS index files
-faiss_index/
-*.faiss
-*.pkl
-
-# Temporary files
-temp/
-tmp/
-*.tmp
-
-# Deployment script
-deploy_to_github.sh
+# Build
+dist/
+build/

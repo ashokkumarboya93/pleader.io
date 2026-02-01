@@ -1,21 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { chatApi } from '../utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
+import {
   Scale, Menu, X, Plus, Send, Bookmark, Copy, Download, LogOut,
-  Settings, HelpCircle, FileText, Mic, Paperclip, Trash2, Search
+  Settings, HelpCircle, FileText, Mic, Paperclip, Trash2, Search,
+  PanelLeft, PanelLeftClose, Briefcase
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { VoiceInput } from '../components/VoiceInput';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { themes, currentTheme } = useTheme();
+  const theme = themes[currentTheme];
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -90,9 +96,9 @@ const Dashboard = () => {
 
     try {
       const response = await chatApi.sendMessage(inputMessage, currentChat?.id);
-      
+
       setMessages(prev => [...prev, response.ai_message]);
-      
+
       if (!currentChat) {
         setCurrentChat({ id: response.chat_id });
         await loadChatHistory();
@@ -137,6 +143,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleLiveCase = () => {
+    toast.info('Live Case Feature', {
+      description: 'Create a dedicated group space for in-depth case resolution. This feature will track a case until it is fully solved. (Coming Soon)'
+    });
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -157,17 +169,26 @@ const Dashboard = () => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <Scale className="w-6 h-6 text-green-500" />
+              <Scale className="w-6 h-6" style={{ color: theme.primary }} />
               <span className="font-bold text-gray-900">Pleader AI</span>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
-              <X className="w-5 h-5" />
+            {/* ChatGPT-style Sidebar Toggle Button */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 group"
+              data-testid="sidebar-close-button"
+              title="Close sidebar"
+            >
+              <PanelLeftClose
+                className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors"
+              />
             </button>
           </div>
-          
+
           <Button
             onClick={handleNewChat}
-            className="w-full bg-green-500 hover:bg-green-600 text-white"
+            className="w-full text-white"
+            style={{ backgroundColor: theme.primary }}
             data-testid="new-chat-button"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -180,7 +201,7 @@ const Dashboard = () => {
           <div className="flex items-center space-x-3">
             <Avatar>
               <AvatarImage src={user?.avatar_url} />
-              <AvatarFallback className="bg-green-100 text-green-700">
+              <AvatarFallback style={{ backgroundColor: theme.background, color: theme.primaryDark }}>
                 {user?.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -203,16 +224,15 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          
+
           <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">Recent Chats</h3>
           <div className="space-y-1">
             {chatHistory.map((chat) => (
               <div
                 key={chat.id}
                 onClick={() => handleLoadChat(chat.id)}
-                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer group ${
-                  currentChat?.id === chat.id ? 'bg-green-50 border border-green-200' : 'hover:bg-gray-50'
-                }`}
+                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer group ${currentChat?.id === chat.id ? 'border' : 'hover:bg-gray-50'}`}
+                style={currentChat?.id === chat.id ? { backgroundColor: theme.background, borderColor: theme.hover } : {}}
                 data-testid={`chat-item-${chat.id}`}
               >
                 <div className="flex-1 min-w-0">
@@ -235,6 +255,14 @@ const Dashboard = () => {
 
         {/* Sidebar Menu */}
         <div className="p-4 border-t border-gray-200 space-y-1">
+          <button
+            onClick={handleLiveCase}
+            className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg group"
+            data-testid="live-case-link"
+          >
+            <Briefcase className="w-5 h-5 text-purple-600 group-hover:text-purple-700" />
+            <span className="font-medium text-purple-700">Live Case</span>
+          </button>
           <button
             onClick={() => navigate('/analyze')}
             className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
@@ -275,14 +303,23 @@ const Dashboard = () => {
         {/* Chat Header */}
         <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
+            {/* Sidebar Open Button - Only visible when sidebar is closed (ChatGPT style) */}
             {!sidebarOpen && (
-              <button onClick={() => setSidebarOpen(true)} data-testid="open-sidebar-button">
-                <Menu className="w-6 h-6 text-gray-700" />
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 group"
+                data-testid="sidebar-open-button"
+                title="Open sidebar"
+              >
+                <PanelLeft
+                  className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors"
+                />
               </button>
             )}
-            <h1 className="text-lg font-semibold text-gray-900">
-              {currentChat ? 'Chat' : 'New Chat'}
-            </h1>
+            <div className="flex items-center space-x-2">
+              <Scale className="w-6 h-6" style={{ color: theme.primary }} />
+              <h1 className="text-lg font-semibold text-gray-900">Pleader AI</h1>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <ThemeSwitcher />
@@ -325,7 +362,7 @@ const Dashboard = () => {
           {messages.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-md">
-                <Scale className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                <Scale className="w-16 h-16 mx-auto mb-4" style={{ color: theme.primary }} />
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Pleader AI</h2>
                 <p className="text-gray-600 mb-6">
                   Your personal legal assistant. Ask me anything about Indian law, or upload documents for analysis.
@@ -335,7 +372,8 @@ const Dashboard = () => {
                     <button
                       key={index}
                       onClick={() => setInputMessage(prompt)}
-                      className="px-4 py-2 text-sm bg-green-50 hover:bg-green-100 text-green-700 rounded-lg border border-green-200"
+                      className="px-4 py-2 text-sm rounded-lg border"
+                      style={{ backgroundColor: theme.background, color: theme.primaryDark, borderColor: theme.hover }}
                       data-testid={`quick-prompt-${index}`}
                     >
                       {prompt}
@@ -352,58 +390,49 @@ const Dashboard = () => {
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in message-wrapper`}
                   data-testid={`message-${index}`}
                 >
-                  <div className={`flex space-x-3 max-w-4xl w-full ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`flex space-x-3 max-w-3xl w-full ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <Avatar className="flex-shrink-0">
-                      <AvatarFallback className={message.sender === 'user' ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200'}>
+                      <AvatarFallback
+                        className={message.sender === 'user' ? 'text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200'}
+                        style={message.sender === 'user' ? { background: `linear-gradient(to bottom right, ${theme.primary}, ${theme.primaryDark})` } : {}}
+                      >
                         {message.sender === 'user' ? (
                           user?.name?.charAt(0).toUpperCase()
                         ) : (
-                          <Scale className="w-5 h-5 text-green-600" />
+                          <Scale className="w-5 h-5" style={{ color: theme.primaryDark }} />
                         )}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div
-                        className={`rounded-2xl p-5 shadow-sm ${
-                          message.sender === 'user'
-                            ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
-                            : 'bg-white border border-gray-100'
-                        }`}
-                        style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                        className={`rounded-2xl p-5 shadow-sm ${message.sender === 'user' ? 'text-white' : 'bg-white border border-gray-100'}`}
+                        style={message.sender === 'user' ? { background: `linear-gradient(to bottom right, ${theme.primary}, ${theme.primaryDark})`, fontFamily: 'Inter, system-ui, sans-serif' } : { fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
-                        <div 
-                          className={`text-base leading-relaxed whitespace-pre-wrap ${
-                            message.sender === 'user' ? 'text-white' : 'text-gray-900'
-                          }`}
+                        <div
+                          className={`text-base leading-relaxed whitespace-pre-wrap ${message.sender === 'user' ? 'text-white' : 'text-gray-900'}`}
                           style={{ fontSize: '16px', lineHeight: '1.6' }}
                         >
-                          {message.content.split('\n').map((line, i) => {
-                            // Format headings
-                            if (line.startsWith('### ')) {
-                              return <h3 key={i} className="text-lg font-bold mt-4 mb-2">{line.replace('### ', '')}</h3>;
-                            }
-                            if (line.startsWith('## ')) {
-                              return <h2 key={i} className="text-xl font-bold mt-4 mb-2">{line.replace('## ', '')}</h2>;
-                            }
-                            if (line.startsWith('# ')) {
-                              return <h1 key={i} className="text-2xl font-bold mt-4 mb-2">{line.replace('# ', '')}</h1>;
-                            }
-                            // Format lists
-                            if (line.match(/^\d+\.\s/)) {
-                              return <li key={i} className="ml-4 mb-1">{line.replace(/^\d+\.\s/, '')}</li>;
-                            }
-                            if (line.startsWith('- ') || line.startsWith('* ')) {
-                              return <li key={i} className="ml-4 mb-1 list-disc">{line.replace(/^[-*]\s/, '')}</li>;
-                            }
-                            // Format bold text
-                            const boldFormatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                            // Regular paragraph
-                            return line.trim() ? (
-                              <p key={i} className="mb-2" dangerouslySetInnerHTML={{ __html: boldFormatted }} />
-                            ) : (
-                              <br key={i} />
-                            );
-                          })}
+                          {message.sender === 'user' ? (
+                            message.content
+                          ) : (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-4 mb-2" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-3 mb-1" {...props} />,
+                                ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
+                                ol: ({ node, ...props }) => <ol className="list-decimal ml-4 mb-2 space-y-1" {...props} />,
+                                li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                a: ({ node, ...props }) => <a className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                                code: ({ node, ...props }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-red-500" {...props} />,
+                                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-gray-200 pl-4 py-1 italic text-gray-600 mb-2" {...props} />
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          )}
                         </div>
                         {message.timestamp && (
                           <p className="text-xs opacity-60 mt-2">
@@ -421,12 +450,6 @@ const Dashboard = () => {
                           >
                             <Copy className="w-4 h-4 text-gray-500" />
                           </button>
-                          <button 
-                            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                            title="Save"
-                          >
-                            <Bookmark className="w-4 h-4 text-gray-500" />
-                          </button>
                         </div>
                       )}
                     </div>
@@ -438,7 +461,7 @@ const Dashboard = () => {
                   <div className="flex space-x-3 max-w-3xl">
                     <Avatar>
                       <AvatarFallback className="bg-gray-200">
-                        <Scale className="w-5 h-5 text-green-600" />
+                        <Scale className="w-5 h-5" style={{ color: theme.primaryDark }} />
                       </AvatarFallback>
                     </Avatar>
                     <div className="bg-white border border-gray-200 rounded-2xl p-4">
@@ -457,39 +480,41 @@ const Dashboard = () => {
         </div>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 p-6 shadow-lg">
-          <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
-            <div className="flex items-end space-x-3">
+        <div className="bg-transparent p-4 pb-6">
+          <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto">
+            <div className="flex items-end space-x-3 bg-white p-2 rounded-3xl shadow-xl border border-gray-100">
               <div className="flex-1 relative">
-                <div className="relative bg-gray-50 rounded-2xl border-2 border-gray-200 focus-within:border-green-500 transition-all">
-                  <Input
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    placeholder="Ask me anything about Indian law..."
-                    className="h-14 pr-20 bg-transparent border-0 focus:ring-0 text-base"
+                <Input
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  placeholder="Ask me anything about Indian law..."
+                  className="h-12 pr-12 bg-transparent border-0 focus:ring-0 text-base shadow-none focus-visible:ring-0"
+                  disabled={loading}
+                  data-testid="message-input"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
+                  <VoiceInput
+                    onTranscript={handleVoiceTranscript}
                     disabled={loading}
-                    data-testid="message-input"
                   />
-                  <div className="absolute right-3 top-3 flex space-x-1">
-                    <VoiceInput 
-                      onTranscript={handleVoiceTranscript}
-                      disabled={loading}
-                    />
-                  </div>
                 </div>
               </div>
               <Button
                 type="submit"
                 disabled={!inputMessage.trim() || loading}
-                className="h-14 px-8 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all"
+                className="h-10 w-10 p-0 rounded-full flex items-center justify-center transition-all hover:opacity-90 active:scale-95 text-white"
+                style={{ background: theme.primary }}
                 data-testid="send-button"
               >
                 {loading ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Send className="w-5 h-5" />
                 )}
               </Button>
+            </div>
+            <div className="text-center mt-2">
+              <p className="text-xs text-gray-400">Pleader AI can make mistakes. Verify important legal information.</p>
             </div>
           </form>
         </div>
